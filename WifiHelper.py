@@ -1,48 +1,58 @@
 import subprocess
 import time
 import logging
+import re
 
 # configure logging
 logging.basicConfig(level=logging.INFO)
 
-NETWORK_SCAN_INTERVAL = 10  # in seconds
+NETWORK_UP_DELAY = 2  # in seconds
+NETWORK_SCAN_INTERVAL = 5  # in seconds
+NETWORK_CONNECT_DELAY = 5  # in seconds
 
 
-def enable_network_if() -> bool:
+async def enable_network() -> bool:
     try:
-        subprocess.run(['sudo', 'rfkill', 'unblock', 'wifi'], check=True)
-        subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', 'wlan0', 'up'], check=True)
-        subprocess.run(['sudo', 'systemctl', 'start', 'wpa_supplicant'], check=True)
-        subprocess.run(['sudo', 'systemctl', 'start', 'dhcpcd'], check=True)
-        time.sleep(2)
+        subprocess.run("sudo nmcli radio wifi on", check=True, shell=True)
+        time.sleep(NETWORK_UP_DELAY)
         return True
     except subprocess.CalledProcessError as e:
-        logging.info(f"Error enabling WIFI interface: {e}")
+        logging.info(f"Error enabling wifi: {e}")
         return False
 
 
-async def scan_networks() -> list | None:
+async def scan_network() -> list | None:
     try:
-        subprocess.run(['sudo', 'wpa_cli', '-i', 'wlan0', 'scan_interval', str(NETWORK_SCAN_INTERVAL)], check=True)
-        subprocess.run(['sudo', 'wpa_cli', '-i', 'wlan0', 'scan'], check=True)
+        subprocess.run("sudo nmcli dev wifi rescan", check=True, shell=True)
         time.sleep(NETWORK_SCAN_INTERVAL)
-        result = subprocess.run(['sudo', 'wpa_cli', '-i', 'wlan0', 'scan_results'], capture_output=True, text=True, check=True)
+        result = subprocess.run("sudo nmcli --get-value ssid dev wifi list", capture_output=True, text=True, check=True, shell=True)
         networks = set()
-        for line in result.stdout.split('\n')[1:]:  # first line is header -> ignore
+        for line in result.stdout.split('\n'):
             if not line.strip():
                 continue
-            parts = line.split('\t')
-            # expected result table format:
-            # 0         1           2               3       4
-            # bssid     frequency   signal_level    flags   SSID
-            if len(parts) < 5:
-                continue
-            ssid = parts[4]
-            if ssid == '':
-                continue
-            networks.add(ssid)
+            networks.add(line.strip())  # 'line' represents SSID
         logging.info(f"[scan_networks] scanned networks: {networks}")
         return list(networks)
     except subprocess.CalledProcessError as e:
         logging.info(f"Error scanning networks: {e}")
         return None
+
+
+async def connect_network(ssid: str, password: str) -> bool:
+    try:
+        logging.info(f"connecting to network {ssid}: {password}")
+        subprocess.run(f"sudo nmcli dev wifi connect \"{ssid}\" password \"{password}\"", check=True, shell=True)
+        time.sleep(NETWORK_CONNECT_DELAY)
+        result = subprocess.run("sudo nmcli --get-value type,state,connection dev status", capture_output=True, text=True, check=True, shell=True)
+        for line in result.stdout.split('\n'):
+            if not line.strip():
+                continue
+            pattern = re.compile(r'^wifi:connected:(.+)$')
+            match = pattern.match(line.strip())
+            if match is not None:
+                connected_ssid = match.group(1)
+                return (connected_ssid == ssid)
+        return False
+    except subprocess.CalledProcessError as e:
+        logging.info(f"Error connecting to network: {e}")
+        return False

@@ -17,10 +17,10 @@ class BleServer:
         "WIFI": "a97bb3e5-5f0c-495e-a87d-d642e77f1216"
     }
     _characteristic_map: Dict = {
-        "WRITE_SSID": "4a2d084a-7c2a-4fb5-9122-700858ed37c0",
-        "WRITE_PASSWORD": "8b107cf0-be4f-4aa9-b7ac-529779d1cc33",
-        "NOTIFY_CONNECT_STATUS": "6cf12fea-c7dc-47c4-a57d-79a3ba7ddfec",
-        "READ_NETWORKS": "a324d143-e23a-4377-ad7c-bd2b89da0e15"
+        "SSID": "4a2d084a-7c2a-4fb5-9122-700858ed37c0",
+        "PASSWORD": "8b107cf0-be4f-4aa9-b7ac-529779d1cc33",
+        "CONNECT_STATUS": "6cf12fea-c7dc-47c4-a57d-79a3ba7ddfec",
+        "NETWORKS": "a324d143-e23a-4377-ad7c-bd2b89da0e15"
     }
     _gatt: Dict = {
         "a97bb3e5-5f0c-495e-a87d-d642e77f1216": {  # WIFI service
@@ -48,15 +48,17 @@ class BleServer:
     }
 
     _scan_networks = False
+    _recvd_wifi_ssid = False
+    _recvd_wifi_password = False
 
     def __init__(self):
-        self._server = BlessServer(name="DietPi-BLE")
+        self._server = BlessServer(name="lullgo-BLE")
 
     @staticmethod
     def read_callback(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
         """Handle read request"""
         logging.info(f"Read request received {characteristic.uuid}")
-        if (characteristic.uuid == BleServer._characteristic_map["READ_NETWORKS"]):
+        if (characteristic.uuid == BleServer._characteristic_map["NETWORKS"]):
             BleServer._scan_networks = True
             return b'ack'
         return b''
@@ -65,7 +67,12 @@ class BleServer:
     def write_callback(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
         """Handle write request"""
         logging.info(f"Write request received: {value}")
-        characteristic.value = value
+        if characteristic.uuid == BleServer._characteristic_map["SSID"]:
+            BleServer._recvd_wifi_ssid = True
+            characteristic.value = value
+        if characteristic.uuid == BleServer._characteristic_map["PASSWORD"]:
+            BleServer._recvd_wifi_password = True
+            characteristic.value = value
 
     @staticmethod
     def notify(server: BlessServer, key: str, value: bytearray):
@@ -84,15 +91,19 @@ class BleServer:
 
     async def _handle_scan_networks(self):
         """Handle scanning networks via WIFI helper functions"""
-        result: bool = wifi.enable_network_if()
+        result: bool = await wifi.enable_network()
         if not result:
-            BleServer.notify(self._server, "WIFI.READ_NETWORKS", b'')
+            BleServer.notify(self._server, "WIFI.CONNECT_STATUS", b'nok')
             return
-        networks: list | None = await wifi.scan_networks()
-        if networks is None:
-            BleServer.notify(self._server, "WIFI.READ_NETWORKS", b'')
-            return
-        BleServer.notify(self._server, "WIFI.READ_NETWORKS", bytearray("\n".join(networks), encoding="utf-8"))
+        networks: list | None = await wifi.scan_network()
+        BleServer.notify(self._server, "WIFI.NETWORKS", bytearray("\n".join(networks), encoding="utf-8") if networks else b'')
+
+    async def _handle_wifi_connect(self):
+        """Handle connecting to network via WIFI helper functions"""
+        ssid_char_uuid = BleServer._characteristic_map["SSID"]
+        password_char_uuid = BleServer._characteristic_map["PASSWORD"]
+        result = await wifi.connect_network(self._server.get_characteristic(ssid_char_uuid).value.decode("utf-8"), self._server.get_characteristic(password_char_uuid).value.decode("utf-8"))
+        BleServer.notify(self._server, "WIFI.CONNECT_STATUS", b'ok' if result else b'nok')
 
     async def run(self):
         """Start the BLE server"""
@@ -102,8 +113,12 @@ class BleServer:
             while True:
                 await asyncio.sleep(1)
                 if BleServer._scan_networks:
-                    await self._handle_scan_networks()
                     BleServer._scan_networks = False
+                    await self._handle_scan_networks()
+                if BleServer._recvd_wifi_ssid and BleServer._recvd_wifi_password:
+                    BleServer._recvd_wifi_ssid = False
+                    BleServer._recvd_wifi_password = False
+                    await self._handle_wifi_connect()
         except asyncio.CancelledError:
             logging.info("BLE GATT server shutting down...")
             await self._server.stop()
