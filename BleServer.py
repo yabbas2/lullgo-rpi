@@ -7,7 +7,7 @@ from bless import (
     GATTCharacteristicProperties,
     GATTAttributePermissions,
 )
-import WifiHelper as wifi
+import NetHelper as wifi
 
 logging.basicConfig(level=logging.INFO)
 
