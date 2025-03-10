@@ -1,0 +1,56 @@
+logLevel: info
+logDestinations: [stdout]
+logFile: mediamtx.log
+
+rtsp: no
+rtmp: no
+hls: no
+srt: no
+webrtc: yes
+webrtcEncryption: yes
+webrtcServerKey: /home/rpi/lullgo/server.key
+webrtcServerCert: /home/rpi/lullgo/server.crt
+webrtcAddress: :8889
+webrtcICEServers2:
+  - url: stun:stun.l.google.com:19302
+
+pathDefaults:
+  rpiCameraCamID: 0
+  rpiCameraWidth: 1920
+  rpiCameraHeight: 1080
+  rpiCameraHFlip: false
+  rpiCameraVFlip: false
+  rpiCameraBrightness: 0
+  rpiCameraContrast: 1
+  rpiCameraSaturation: 1
+  rpiCameraSharpness: 1
+  rpiCameraExposure: normal
+  rpiCameraAWB: auto
+  rpiCameraAWBGains: [0, 0]
+  rpiCameraDenoise: "off"
+  rpiCameraShutter: 0
+  rpiCameraMetering: centre
+  rpiCameraGain: 0
+  rpiCameraEV: 0
+  rpiCameraROI:
+  rpiCameraHDR: false
+  rpiCameraTuningFile:
+  rpiCameraMode:
+  rpiCameraFPS: 30
+  rpiCameraAfMode: continuous
+  rpiCameraAfRange: normal
+  rpiCameraAfSpeed: normal
+  rpiCameraLensPosition: 0.0
+  rpiCameraAfWindow:
+  rpiCameraFlickerPeriod: 0
+  rpiCameraTextOverlayEnable: false
+  rpiCameraTextOverlay: '%Y-%m-%d %H:%M:%S - MediaMTX'
+  rpiCameraCodec: hardwareH264
+  rpiCameraIDRPeriod: 60
+  rpiCameraBitrate: 5000000
+  rpiCameraProfile: main
+  rpiCameraLevel: '4.1'
+
+paths:
+  cam:
+    source: rpiCamera
