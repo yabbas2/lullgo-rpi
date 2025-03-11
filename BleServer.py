@@ -1,3 +1,4 @@
+import distro
 import asyncio
 import logging
 from typing import Any, Dict
@@ -7,7 +8,7 @@ from bless import (
     GATTCharacteristicProperties,
     GATTAttributePermissions,
 )
-import NetHelper as wifi
+from NetMngr import *
 
 logging.basicConfig(level=logging.INFO)
 
@@ -51,8 +52,9 @@ class BleServer:
     _recvd_wifi_ssid = False
     _recvd_wifi_password = False
 
-    def __init__(self):
+    def __init__(self, net_mngr: NetMngr):
         self._server = BlessServer(name="lullgo-BLE")
+        self._net_mngr = net_mngr
 
     @staticmethod
     def read_callback(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
@@ -91,18 +93,18 @@ class BleServer:
 
     async def _handle_scan_networks(self):
         """Handle scanning networks via WIFI helper functions"""
-        result: bool = await wifi.enable_network()
+        result: bool = await self._net_mngr.enable_network()
         if not result:
             BleServer.notify(self._server, "WIFI.CONNECT_STATUS", b'nok')
             return
-        networks: list | None = await wifi.scan_network()
-        BleServer.notify(self._server, "WIFI.NETWORKS", bytearray("\n".join(networks), encoding="utf-8") if networks else b'')
+        networks: list = await self._net_mngr.scan_network()
+        BleServer.notify(self._server, "WIFI.NETWORKS", bytearray("\n".join(networks), encoding="utf-8"))
 
     async def _handle_wifi_connect(self):
         """Handle connecting to network via WIFI helper functions"""
         ssid_char_uuid = BleServer._characteristic_map["SSID"]
         password_char_uuid = BleServer._characteristic_map["PASSWORD"]
-        result = await wifi.connect_network(self._server.get_characteristic(ssid_char_uuid).value.decode("utf-8"), self._server.get_characteristic(password_char_uuid).value.decode("utf-8"))
+        result = await self._net_mngr.connect_network(self._server.get_characteristic(ssid_char_uuid).value.decode("utf-8"), self._server.get_characteristic(password_char_uuid).value.decode("utf-8"))
         BleServer.notify(self._server, "WIFI.CONNECT_STATUS", b'ok' if result else b'nok')
 
     async def run(self):
@@ -124,9 +126,13 @@ class BleServer:
             await self._server.stop()
 
 
-# run the BLE GATT server
 async def main():
-    ble_server = BleServer()
+    os_ver = distro.major_version()
+    if int(os_ver) > 11:  # after bullseye release
+        net_mngr = NetworkManager()
+    else:  # bullseye and previous releases
+        net_mngr = WpaSupplicant()
+    ble_server = BleServer(net_mngr)
     await ble_server.run()
 
 
