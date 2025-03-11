@@ -1,2 +1,5 @@
 ._*
 __pycache__/
+tools/
+certs/
+.DS_Store
