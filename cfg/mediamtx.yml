@@ -2,7 +2,7 @@ logLevel: info
 logDestinations: [stdout]
 logFile: mediamtx.log
 
-rtsp: no
+rtsp: yes
 rtmp: no
 hls: no
 srt: no
@@ -54,3 +54,12 @@ pathDefaults:
 paths:
   cam:
     source: rpiCamera
+    sourceOnDemand: true
+
+  feed:
+    runOnDemand: >
+      gst-launch-1.0
+      rtspclientsink name=s location=rtsp://localhost:$RTSP_PORT/feed
+      rtspsrc location=rtsp://127.0.0.1:$RTSP_PORT/cam latency=0 ! rtph264depay ! s.
+      alsasrc device=hw:1,0 ! audioconvert ! audioresample ! audio/x-raw,rate=48000,channels=1 ! opusenc bitrate=96000 ! s.
+    runOnDemandRestart: yes
