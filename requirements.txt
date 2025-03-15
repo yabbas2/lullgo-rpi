@@ -1,2 +1,5 @@
 bless
 distro
+sounddevice
+scipy
+numpy
