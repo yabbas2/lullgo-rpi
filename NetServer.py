@@ -18,7 +18,7 @@ def home():
 
 if __name__ == '__main__':
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain('server.crt', 'server.key')
+    context.load_cert_chain('./certs/server.crt', './certs/server.key')
 
     app.run(
         host='0.0.0.0',

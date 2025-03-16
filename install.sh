@@ -22,4 +22,10 @@ git clone https://github.com/HinTak/seeed-voicecard.git
 cd seeed-voicecard
 git checkout v6.1
 sudo ./install.sh
+
+cd ../..
+mkdir -p models
+MODEL_PATH="./models/yamnet.tflite"
+curl -L 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/rpi/lite-model_yamnet_classification_tflite_1.tflite' -o ${MODEL_PATH}
+
 sudo reboot now
