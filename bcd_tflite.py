@@ -1,10 +1,25 @@
+"""
+Using INMP441 I2S mic requires patching tflite_support.task.core.audio_record, such that
+
+1. in __init__ method: initializing sounddevice audio stream with proper values:
+channels=2,
+samplerate=48000
+
+2. in audio_callback method: resampling audio stream from 48khz to 16khz:
+original_sr = 48000
+target_sr = 16000
+ratio = target_sr / original_sr
+target_num_samples = int(len(indata[:, 0]) * ratio)
+resampled_data = resample(indata[:, 0], target_num_samples)
+resampled_data = resampled_data.reshape(-1, 1)
+"""
 import time
 from tflite_support.task import audio
 from tflite_support.task import core
 from tflite_support.task import processor
 
 import sounddevice as sd
-sd.default.device = 0  # seeed respeaker 2-mics
+sd.default.device = 0
 sd.default.channels = 2
 
 MODEL_PATH = "./models/yamnet.tflite"

@@ -18,14 +18,15 @@ mkdir -p mediamtx
 tar -xvzf mediamtx_v1.11.3_linux_armv7.tar.gz -C mediamtx
 rm mediamtx_v1.11.3_linux_armv7.tar.gz
 
-git clone https://github.com/HinTak/seeed-voicecard.git
-cd seeed-voicecard
-git checkout v6.1
-sudo ./install.sh
-
-cd ../..
+cd ..
 mkdir -p models
 MODEL_PATH="./models/yamnet.tflite"
 curl -L 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/rpi/lite-model_yamnet_classification_tflite_1.tflite' -o ${MODEL_PATH}
+
+sudo cp ./services/pop_remove.service /etc/systemd/system/pop_remove.service
+sudo cp ./services/mediamtx.service /etc/systemd/system/mediamtx.service
+sudo systemctl daemon-reload
+sudo systemctl enable pop_remove.service
+sudo systemctl enable mediamtx.service
 
 sudo reboot now

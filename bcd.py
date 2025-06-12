@@ -4,7 +4,7 @@ from scipy.signal import butter, lfilter
 import time
 
 # Configuration
-SAMPLE_RATE = 16000      # 16 kHz (sufficient for baby cry frequencies)
+SAMPLE_RATE = 48000      # 48 kHz (sufficient for baby cry frequencies)
 CHUNK_DURATION = 4       # Process 4-second audio chunks
 CHUNK_SIZE = SAMPLE_RATE * CHUNK_DURATION
 FREQ_MIN = 300           # Baby cry frequency range (Hz)

@@ -7,12 +7,18 @@ rtmp: no
 hls: no
 srt: no
 webrtc: yes
-webrtcEncryption: yes
-webrtcServerKey: ../../certs/server.key
-webrtcServerCert: ../../certs/server.crt
+# webrtcEncryption: yes
+# webrtcServerKey: ../../certs/server.key
+# webrtcServerCert: ../../certs/server.crt
 webrtcAddress: :8889
 webrtcICEServers2:
   - url: stun:stun.l.google.com:19302
+
+api: yes
+apiAddress: :9997
+# apiEncryption: yes
+# apiServerKey: ../../certs/server.key
+# apiServerCert: ../../certs/server.crt
 
 pathDefaults:
   rpiCameraCamID: 0

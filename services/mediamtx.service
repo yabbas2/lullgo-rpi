@@ -1,0 +1,11 @@
+[Unit]
+Description=MediaMTX Provider
+Wants=network.target
+
+[Service]
+User=rpi
+ExecStart=/home/rpi/lullgo/tools/mediamtx/mediamtx /home/rpi/lullgo/cfg/mediamtx.yml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
