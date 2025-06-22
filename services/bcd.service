@@ -1,0 +1,10 @@
+[Unit]
+Description=Baby Cry Detection
+
+[Service]
+User=rpi
+ExecStart=/usr/bin/python3 /home/rpi/lullgo/bcd_tflite.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

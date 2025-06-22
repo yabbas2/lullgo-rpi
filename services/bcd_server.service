@@ -1,0 +1,11 @@
+[Unit]
+Description=Baby Crying Detection Server
+Wants=network.target
+
+[Service]
+User=rpi
+ExecStart=/usr/bin/python3 /home/rpi/lullgo/bcd_server.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
