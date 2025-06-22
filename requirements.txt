@@ -5,3 +5,8 @@ scipy==1.13.1
 numpy==2.0.2
 tflite-support==0.4.3
 tflite-runtime==2.13.0
+flask==3.1.0
+flask-cors==5.0.1
+pywebpush==2.0.3
+python-dotenv==1.1.0
+requests==2.25.1
