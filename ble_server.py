@@ -8,7 +8,7 @@ from bless import (
     GATTCharacteristicProperties,
     GATTAttributePermissions,
 )
-from NetMngr import *
+from net_mngr import *
 
 logging.basicConfig(level=logging.INFO)
 
