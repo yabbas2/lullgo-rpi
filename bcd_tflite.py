@@ -17,15 +17,16 @@ import time
 from tflite_support.task import audio
 from tflite_support.task import core
 from tflite_support.task import processor
+import requests
 
 import sounddevice as sd
 sd.default.device = 0
 sd.default.channels = 2
 
-MODEL_PATH = "./models/yamnet.tflite"
+MODEL_PATH = "/home/rpi/lullgo/models/yamnet.tflite"
 MAX_NOF_RESULTS = 5
 OVERLAP_FACTOR = 0.5
-SCORE_THRESHOLD = 0.5
+SCORE_THRESHOLD = 0.3
 CPU_THREADS = 4
 DESIRED_CLASSES = ["Screaming", "Baby laughter", "Crying, sobbing", "Baby cry, infant cry"]
 
@@ -90,8 +91,9 @@ def run(model: str, max_results: int, score_threshold: float,
 
         for res in result_list:
             if res[0] in DESIRED_CLASSES:
-                print(f"{res[0]}: {res[1]}")
-                print("==========================================")
+                # print(f"{res[0]}: {res[1]}")
+                requests.post("https://rpi.local:5000/notify")
+                # print("==========================================")
 
 
 def main():
