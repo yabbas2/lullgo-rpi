@@ -7,23 +7,23 @@ rtmp: no
 hls: no
 srt: no
 webrtc: yes
-# webrtcEncryption: yes
-# webrtcServerKey: ../../certs/server.key
-# webrtcServerCert: ../../certs/server.crt
+webrtcEncryption: yes
+webrtcServerKey: /home/rpi/lullgo/certs/rpi_local.key
+webrtcServerCert: /home/rpi/lullgo/certs/rpi_local.crt
 webrtcAddress: :8889
 webrtcICEServers2:
   - url: stun:stun.l.google.com:19302
 
 api: yes
 apiAddress: :9997
-# apiEncryption: yes
-# apiServerKey: ../../certs/server.key
-# apiServerCert: ../../certs/server.crt
+apiEncryption: yes
+apiServerKey: /home/rpi/lullgo/certs/rpi_local.key
+apiServerCert: /home/rpi/lullgo/certs/rpi_local.crt
 
 pathDefaults:
   rpiCameraCamID: 0
-  rpiCameraWidth: 1920
-  rpiCameraHeight: 1080
+  rpiCameraWidth: 320
+  rpiCameraHeight: 240
   rpiCameraHFlip: false
   rpiCameraVFlip: false
   rpiCameraBrightness: 0
@@ -63,9 +63,6 @@ paths:
     sourceOnDemand: true
 
   feed:
-    runOnDemand: >
-      gst-launch-1.0
-      rtspclientsink name=s location=rtsp://localhost:$RTSP_PORT/feed
-      rtspsrc location=rtsp://127.0.0.1:$RTSP_PORT/cam latency=0 ! rtph264depay ! s.
-      alsasrc device=hw:1,0 ! audioconvert ! audioresample ! audio/x-raw,rate=48000,channels=2 ! opusenc bitrate=96000 ! s.
+    runOnDemand: sh /home/rpi/lullgo/scripts/start_feed_hook.sh
     runOnDemandRestart: yes
+    runOnNotReady: sh /home/rpi/lullgo/scripts/stop_feed_hook.sh
