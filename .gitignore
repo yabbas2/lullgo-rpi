@@ -4,3 +4,5 @@ tools/
 certs/
 models/
 .DS_Store
+.env
+databases/
