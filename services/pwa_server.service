@@ -1,0 +1,11 @@
+[Unit]
+Description=PWA Server
+Wants=network.target
+
+[Service]
+User=rpi
+ExecStart=/usr/local/bin/serve --ssl-cert /home/rpi/lullgo/certs/rpi_local.crt --ssl-key /home/rpi/lullgo/certs/rpi_local.key -s /home/rpi/pwa
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
