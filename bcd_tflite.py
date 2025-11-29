@@ -1,23 +1,8 @@
-"""
-Using INMP441 I2S mic requires patching tflite_support.task.core.audio_record, such that
-
-1. in __init__ method: initializing sounddevice audio stream with proper values:
-channels=2,
-samplerate=48000
-
-2. in audio_callback method: resampling audio stream from 48khz to 16khz:
-original_sr = 48000
-target_sr = 16000
-ratio = target_sr / original_sr
-target_num_samples = int(len(indata[:, 0]) * ratio)
-resampled_data = resample(indata[:, 0], target_num_samples)
-resampled_data = resampled_data.reshape(-1, 1)
-"""
 import time
 from tflite_support.task import audio
 from tflite_support.task import core
 from tflite_support.task import processor
-import requests
+#import requests
 
 import sounddevice as sd
 sd.default.device = 0
@@ -91,9 +76,9 @@ def run(model: str, max_results: int, score_threshold: float,
 
         for res in result_list:
             if res[0] in DESIRED_CLASSES:
-                # print(f"{res[0]}: {res[1]}")
-                requests.post("https://rpi.local:5000/notify")
-                # print("==========================================")
+                print(f"{res[0]}: {res[1]}")
+                # requests.post("https://rpi.local:5000/notify")
+                print("==========================================")
 
 
 def main():
