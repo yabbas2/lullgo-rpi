@@ -1,4 +1,4 @@
-# Lullgo (Raspberry PI Zero 2W edition)
+# Lullgo (Raspberry PI Zero 2W)
 
 ## Python
 

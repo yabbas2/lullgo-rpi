@@ -10,3 +10,5 @@ flask-cors==5.0.1
 pywebpush==2.0.3
 python-dotenv==1.1.0
 requests==2.25.1
+websockets==15.0.1
+gpiozero==2.0.1
