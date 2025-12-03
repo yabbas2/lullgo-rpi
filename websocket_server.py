@@ -1,6 +1,7 @@
 """
 WebSocket Server
 Listens for heartbeat messages and sends acknowledgements
+Listens for baby cry detection messages
 """
 
 import asyncio
@@ -17,7 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class HeartbeatServer:
+class WebsocketServer:
     def __init__(self, host='0.0.0.0', port=8765):
         """
         Initialize the WebSocket server
@@ -78,6 +79,21 @@ class HeartbeatServer:
                             'last_heartbeat': timestamp,
                             'last_seen': datetime.now().isoformat()
                         }
+                    elif data.get('type') == 'bcd':
+                        # Extract client information
+                        client_name = data.get('client_name', 'Unknown')
+                        timestamp = data.get('timestamp', '')
+
+                        # Log the bcd message
+                        logger.info(f"BCD message received from {client_name} at {timestamp}")
+
+                        # Store client info
+                        self.client_info[client_id] = {
+                            'name': client_name,
+                            'address': client_address,
+                            'last_bcd': timestamp,
+                            'last_seen': datetime.now().isoformat()
+                        }
                     else:
                         logger.warning(f"Unknown message type from {client_address}: {data.get('type')}")
 
@@ -119,7 +135,7 @@ class HeartbeatServer:
 
 def main():
     """Main function to run the server"""
-    server = HeartbeatServer()
+    server = WebsocketServer()
 
     try:
         asyncio.run(server.run())

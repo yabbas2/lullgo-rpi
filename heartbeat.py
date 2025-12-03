@@ -8,7 +8,6 @@ import websockets
 import json
 import logging
 from datetime import datetime
-import argparse
 import time
 from gpiozero import LED
 
@@ -20,8 +19,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class HeartbeatClient:
-    def __init__(self, server_url, client_name="rpi-nurse"):
+class Heartbeat:
+    def __init__(self, server_url, client_name="rpi-nurse.heartbeat"):
         """
         Initialize the WebSocket client
 
@@ -144,7 +143,7 @@ class HeartbeatClient:
 
 def main():
     """Main function to run the client"""
-    client = HeartbeatClient(server_url="ws://parent.local:8765")
+    client = Heartbeat(server_url="ws://parent.local:8765")
 
     try:
         asyncio.run(client.run_with_reconnect())
