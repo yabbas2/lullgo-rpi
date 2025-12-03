@@ -50,6 +50,7 @@ sudo npm install -g serve
 #sudo cp ./services/pop_remove.service /etc/systemd/system/pop_remove.service
 #sudo cp ./services/mediamtx.service /etc/systemd/system/mediamtx.service
 sudo cp ./services/bcd.service /etc/systemd/system/bcd.service
+sudo cp ./services/heartbeat.service /etc/systemd/system/heartbeat.service
 #sudo cp ./services/bcd_server.service /etc/systemd/system/bcd_server.service
 #sudo cp ./services/ir_server.service /etc/systemd/system/ir_server.service
 #sudo cp ./services/pwa_server.service /etc/systemd/system/pwa_server.service
@@ -57,6 +58,7 @@ sudo systemctl daemon-reload
 #sudo systemctl enable pop_remove.service
 #sudo systemctl enable mediamtx.service
 sudo systemctl enable bcd.service
+sudo systemctl enable heartbeat.service
 #sudo systemctl enable bcd_server.service
 #sudo systemctl enable ir_server.service
 #sudo systemctl enable pwa_server.service

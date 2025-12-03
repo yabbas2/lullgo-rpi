@@ -1,0 +1,10 @@
+[Unit]
+Description=Baby Cry Detection
+
+[Service]
+User=rpi
+ExecStart=/home/rpi/lullgo/pyvenv/bin/python3 /home/rpi/lullgo/heartbeat.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
