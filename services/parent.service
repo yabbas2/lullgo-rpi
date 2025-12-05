@@ -3,7 +3,7 @@ Description=Baby Cry Detection
 
 [Service]
 User=rpi
-ExecStart=/home/rpi/lullgo/pyvenv/bin/python3 /home/rpi/lullgo/bcd.py
+ExecStart=/home/rpi/lullgo/pyvenv/bin/python3 /home/rpi/lullgo/parent.py
 Restart=on-failure
 
 [Install]

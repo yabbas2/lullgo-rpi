@@ -1,15 +1,9 @@
-bless==0.2.6
 distro==1.5.0
 sounddevice==0.5.1
 scipy==1.13.1
 numpy==2.0.2
 tflite-support==0.4.3
 tflite-runtime==2.13.0
-flask==3.1.0
-flask-cors==5.0.1
-pywebpush==2.0.3
-python-dotenv==1.1.0
-requests==2.25.1
 websockets==15.0.1
 gpiozero==2.0.1
 soundfile==0.13.1

@@ -1,9 +1,0 @@
-[Unit]
-Description=Popping Sound Remove Service
-
-[Service]
-ExecStart=/usr/bin/aplay -D dmix:0,0 -t raw -r 48000 -c 2 -f S32_LE /dev/zero
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
