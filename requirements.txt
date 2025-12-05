@@ -12,3 +12,4 @@ python-dotenv==1.1.0
 requests==2.25.1
 websockets==15.0.1
 gpiozero==2.0.1
+soundfile==0.13.1

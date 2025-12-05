@@ -90,7 +90,7 @@ class Heartbeat:
 
                 if self.missed_heartbeats >= self.max_missed_heartbeats:
                     logger.error(f"Too many missed heartbeats. Reconnecting...")
-                    self.led.off()
+                    # self.led.off()
                     return False
             else:
                 # Reset missed heartbeat counter on successful send

@@ -40,6 +40,7 @@ class BCD:
         self.connection = None
         self.is_running = False
         self.reconnect_interval = 5
+        self.send_interval = 2
         self.last_bcd = time.time()
         # Initialize bcd parameters
         self.model_path = "/home/rpi/lullgo/models/yamnet.tflite"
@@ -60,7 +61,7 @@ class BCD:
     async def send_bcd_msg(self):
         """Send baby cry detection message to server"""
         tmp = time.time()
-        if tmp - self.last_bcd < 2:
+        if (tmp - self.last_bcd) < self.send_interval:
             # do not send bcd message yet
             return True
         self.last_bcd = tmp
