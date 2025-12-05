@@ -35,66 +35,66 @@ class BCD:
             client_name (str): Name of this client
         """
         # Initialize websocket parameters
-        self.server_url = server_url
-        self.client_name = client_name
-        self.connection = None
-        self.is_running = False
-        self.reconnect_interval = 5
-        self.send_interval = 2
-        self.last_bcd = time.time()
+        self._server_url = server_url
+        self._client_name = client_name
+        self._connection = None
+        self._is_running = False
+        self._reconnect_interval = 5
+        self._send_interval = 2
+        self._last_bcd = time.time()
         # Initialize bcd parameters
-        self.model_path = "/home/rpi/lullgo/models/yamnet.tflite"
-        self.max_nof_results = 5
-        self.overlap_factor = 0.5  # allowed range: ]0, 1[
-        self.score_threshold = 0.3  # allowed range: [0, 1]
-        self.cpu_threads = 4
-        self.desired_classes = ["Screaming", "Baby laughter", "Crying, sobbing", "Baby cry, infant cry"]
+        self._model_path = "/home/rpi/lullgo/models/yamnet.tflite"
+        self._max_nof_results = 5
+        self._overlap_factor = 0.5  # allowed range: ]0, 1[
+        self._score_threshold = 0.3  # allowed range: [0, 1]
+        self._cpu_threads = 4
+        self._desired_classes = ["Screaming", "Baby laughter", "Crying, sobbing", "Baby cry, infant cry"]
         # Initialize the audio classification model
-        self.base_options = core.BaseOptions(file_name=self.model_path, use_coral=False, num_threads=self.cpu_threads)
-        self.classification_options = processor.ClassificationOptions(max_results=self.max_nof_results, score_threshold=self.score_threshold)
-        self.options = audio.AudioClassifierOptions(base_options=self.base_options, classification_options=self.classification_options)
-        self.classifier = audio.AudioClassifier.create_from_options(self.options)
+        self._base_options = core.BaseOptions(file_name=self._model_path, use_coral=False, num_threads=self._cpu_threads)
+        self._classification_options = processor.ClassificationOptions(max_results=self._max_nof_results, score_threshold=self._score_threshold)
+        self._options = audio.AudioClassifierOptions(base_options=self._base_options, classification_options=self._classification_options)
+        self._classifier = audio.AudioClassifier.create_from_options(self._options)
         # Initialize the audio recorder and a tensor to store the audio input
-        self.audio_record = self.classifier.create_audio_record()
-        self.tensor_audio = self.classifier.create_input_tensor_audio()
+        self._audio_record = self._classifier.create_audio_record()
+        self._tensor_audio = self._classifier.create_input_tensor_audio()
 
-    async def send_bcd_msg(self):
+    async def _send_bcd_msg(self):
         """Send baby cry detection message to server"""
         tmp = time.time()
-        if (tmp - self.last_bcd) < self.send_interval:
+        if (tmp - self._last_bcd) < self._send_interval:
             # do not send bcd message yet
             return True
-        self.last_bcd = tmp
+        self._last_bcd = tmp
 
         bcd_message = {
             'type': 'bcd',
-            'client_name': self.client_name,
+            'client_name': self._client_name,
             'timestamp': datetime.now().isoformat(),
         }
 
         try:
-            await self.connection.send(json.dumps(bcd_message))
+            await self._connection.send(json.dumps(bcd_message))
             logger.info(f"BCD message sent to server at {datetime.now().strftime('%H:%M:%S')}")
             return True
         except Exception as e:
             logger.error(f"Failed to send BCD message: {e}")
             return False
 
-    async def bcd_main(self):
+    async def _bcd_main(self):
         """Continuously run inference on audio data acquired from the device."""
 
         # We'll try to run inference every interval_between_inference seconds.
         # This is usually half of the model's input length to create an overlap
         # between incoming audio segments to improve classification accuracy.
-        input_length_in_second = float(len(self.tensor_audio.buffer)) / self.tensor_audio.format.sample_rate
-        interval_between_inference = input_length_in_second * (1 - self.overlap_factor)
+        input_length_in_second = float(len(self._tensor_audio.buffer)) / self._tensor_audio.format.sample_rate
+        interval_between_inference = input_length_in_second * (1 - self._overlap_factor)
         pause_time = interval_between_inference * 0.1
         last_inference_time = time.time()
 
         # Start audio recording in the background.
-        self.audio_record.start_recording()
+        self._audio_record.start_recording()
 
-        while self.is_running:
+        while self._is_running:
             # Wait until at least interval_between_inference seconds has passed since
             # the last inference.
             now = time.time()
@@ -105,57 +105,57 @@ class BCD:
             last_inference_time = now
 
             # Load the input audio and run classify.
-            self.tensor_audio.load_from_audio_record(self.audio_record)
-            result = self.classifier.classify(self.tensor_audio)
+            self._tensor_audio.load_from_audio_record(self.audio_record)
+            result = self._classifier.classify(self.tensor_audio)
 
             # print(result)
             classification = result.classifications[0]
             result_list = [(category.category_name, category.score) for category in classification.categories]
 
             for res in result_list:
-                if res[0] in self.desired_classes:
+                if res[0] in self._desired_classes:
                     # print(f"{res[0]}: {res[1]}")
                     # print("==========================================")
-                    self.is_running = await self.send_bcd_msg()
+                    self._is_running = await self._send_bcd_msg()
 
         # Free up resources
-        self.audio_record.stop()
+        self._audio_record.stop()
 
-    async def connect(self):
+    async def _connect(self):
         """Connect to the WebSocket server"""
-        logger.info(f"Connecting to server at {self.server_url}")
+        logger.info(f"Connecting to server at {self._server_url}")
 
         try:
-            self.connection = await websockets.connect(self.server_url)
+            self._connection = await websockets.connect(self._server_url)
             logger.info(f"Connected to server successfully")
 
             # Start detection loop
-            self.is_running = True
-            bcd_task = asyncio.create_task(self.bcd_main())
+            self._is_running = True
+            bcd_task = asyncio.create_task(self._bcd_main())
 
             await asyncio.sleep(1)
             # Wait for task to complete
             await asyncio.gather(bcd_task)
 
         except ConnectionRefusedError:
-            logger.error(f"Connection refused. Is the server running at {self.server_url}?")
+            logger.error(f"Connection refused. Is the server running at {self._server_url}?")
         except Exception as e:
             logger.error(f"Connection error: {e}")
         finally:
-            self.is_running = False
-            if self.connection:
-                await self.connection.close()
+            self._is_running = False
+            if self._connection:
+                await self._connection.close()
 
     async def run_with_reconnect(self):
         """Run client with automatic reconnection"""
         while True:
             try:
-                await self.connect()
+                await self._connect()
             except Exception as e:
                 logger.error(f"Client error: {e}")
 
-            logger.info(f"Attempting to reconnect in {self.reconnect_interval} seconds...")
-            await asyncio.sleep(self.reconnect_interval)
+            logger.info(f"Attempting to reconnect in {self._reconnect_interval} seconds...")
+            await asyncio.sleep(self._reconnect_interval)
 
 
 def main():
