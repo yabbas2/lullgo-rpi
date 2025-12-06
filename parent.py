@@ -13,6 +13,7 @@ import numpy as np
 import threading
 import queue
 import soundfile as sf
+from gpiozero import LED
 
 import sounddevice as sd
 sd.default.device = 0
@@ -142,6 +143,7 @@ class WebsocketServer:
         self._port = port
         self._clients = set()
         self._client_info = {}
+        self._led = LED(26)
 
         # Initialize audio player
         self._audio_player = AudioPlayer()
@@ -225,16 +227,15 @@ class WebsocketServer:
                 del self._client_info[client_id]
             logger.info(f"Active connections: {len(self._clients)}")
 
-    def get_uptime(self):
-        """Get server uptime (simplified version)"""
-        # In a real implementation, you might track when the server started
-        return "Server started recently"
-
     async def _periodic_status(self):
-        """Periodically log server status"""
+        """Periodically check server status"""
         while True:
-            await asyncio.sleep(30)  # Log every 30 seconds
+            await asyncio.sleep(3)
             logger.info(f"Server status - Active connections: {len(self._clients)}")
+            if len(self._clients) != 0:
+                self._led.on()
+            else:
+                self._led.blink()
 
     async def run(self):
         """Run the WebSocket server"""
